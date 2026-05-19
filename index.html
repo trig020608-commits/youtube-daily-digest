@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>YouTube Daily Digest</title>
+<link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+<header>
+  <h1>📺 YouTube Daily Digest</h1>
+  <a href="https://github.com/trig020608-commits/youtube-daily-digest">GitHub</a>
+</header>
+<div class="container">
+  <input class="search-bar" placeholder="搜索日期或关键词…" oninput="search(this.value)" id="searchInput"/>
+  <div class="entries" id="entries">
+    <div class="empty"><div class="icon">📭</div><p>加载中…</p></div>
+  </div>
+</div>
+<script>
+let allPosts = [];
+
+fetch('posts/index.json')
+  .then(r => r.json())
+  .then(data => {
+    allPosts = data;
+    render(data);
+  })
+  .catch(() => {
+    document.getElementById('entries').innerHTML =
+      '<div class="empty"><div class="icon">📭</div><p>暂无已发布内容</p></div>';
+  });
+
+function render(posts) {
+  const el = document.getElementById('entries');
+  if (!posts.length) {
+    el.innerHTML = '<div class="empty"><div class="icon">🔍</div><p>没有匹配的内容</p></div>';
+    return;
+  }
+  el.innerHTML = posts.map(p => `
+    <a class="entry-card" href="posts/${p.date}.html">
+      <div class="entry-date">${p.date}</div>
+      <div class="entry-title">${p.title}</div>
+      <div class="entry-meta">
+        <span>📹 ${p.video_count} 条视频</span>
+        ${p.channels.map(c => `<span class="tag">${c}</span>`).join('')}
+      </div>
+    </a>
+  `).join('');
+}
+
+function search(q) {
+  const lower = q.toLowerCase();
+  render(allPosts.filter(p =>
+    p.date.includes(lower) ||
+    p.title.toLowerCase().includes(lower) ||
+    p.channels.some(c => c.toLowerCase().includes(lower))
+  ));
+}
+</script>
+</body>
+</html>
